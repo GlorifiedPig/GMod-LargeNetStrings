@@ -17,19 +17,24 @@ if SERVER then
     end
 
     function net.WriteLargeString( largeString )
-        local chunksToSend = math.ceil( string.len( largeString ) / 2000 )
-        local chunksTbl = chunkstring( largeString, 2000 )
-        net.WriteUInt( chunksToSend, 8 ) -- send how many chunks we are supposed to be receiving for an appropriate clientsided for loop
+        local chunksToSend = math.ceil( string.len( largeString ) / 8000 )
+        local chunksTbl = chunkstring( largeString, 8000 )
+        net.WriteUInt( chunksToSend, 4 ) -- send how many chunks we are supposed to be receiving for an appropriate clientsided for loop
         for i = 1, chunksToSend do
-            net.WriteData( util.Compress( chunksTbl[i] ), 16008 ) -- 2000 max chars * 8 + 8 for bytecount
+            local bufferSize = ( string.len( chunksTbl[i] ) * 8 ) + 8
+            net.WriteUInt( bufferSize, 6 )
+            net.WriteData( util.Compress( chunksTbl[i] ), bufferSize ) -- 8000 max chars * 8 + 8 for bytecount
         end
     end
 else
     function net.ReadLargeString()
         local largeString = ""
-        local chunksToReceive = net.ReadUInt( 8 )
+        local chunksToReceive = net.ReadUInt( 4 )
         for i = 1, chunksToReceive do
-            largeString = largeString .. util.Decompress( net.ReadData( 16008 ) )
+            local bufferSize = net.ReadUInt( 6 )
+            local readData = net.ReadData( bufferSize )
+            readData = util.Decompress( readData )
+            largeString = largeString .. readData
         end
         return largeString
     end
