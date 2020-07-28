@@ -7,9 +7,21 @@ if not net.WriteLargeString then
     end
 end
 
+if not net.WriteTableAsString then
+    function net.WriteTableAsString( tbl )
+        net.WriteLargeString( util.JSONToTable( tbl ) )
+    end
+end
+
 if not net.ReadLargeString then
     function net.ReadLargeString()
         local byteCount = net.ReadUInt( 16 )
         return util.Decompress( net.ReadData( byteCount ) )
+    end
+end
+
+if not net.ReadTableAsString then
+    function net.ReadTableAsString()
+        return util.TableToJSON( net.ReadLargeString() )
     end
 end
