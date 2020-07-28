@@ -9,7 +9,7 @@ end
 
 if not net.WriteTableAsString then
     function net.WriteTableAsString( tbl )
-        net.WriteLargeString( util.JSONToTable( tbl ) )
+        net.WriteLargeString( util.TableToJSON( tbl ) )
     end
 end
 
@@ -22,6 +22,6 @@ end
 
 if not net.ReadTableAsString then
     function net.ReadTableAsString()
-        return util.TableToJSON( net.ReadLargeString() )
+        return util.JSONToTable( net.ReadLargeString() )
     end
 end
